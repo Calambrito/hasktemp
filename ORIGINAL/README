@@ -1,0 +1,111 @@
+============== About ===========================
+
+This is the source code accompanying the paper
+
+     Finding Connected Subgraphs of Fixed Minimum Density:
+     Implementation and Experiments
+
+by Christian Komusiewicz, Manuel Sorge, and Kolja Stahl, to appear in
+the Proceedings of the 14th International Symposium on Experimental
+Algorithms, LNCS, Springer, 2015.
+
+The source code implements an algorithm for finding subgraphs of a
+given minimum density (the ratio of the number of edges present to the
+maximum number edges possible) and of a given minimum number of
+vertices.
+
+============== Prerequisites ===================
+
+Haskell Compiler (https://www.haskell.org/ghc/) and Cabal
+(https://www.haskell.org/cabal/).
+
+The preferred way to install Haskell is using the Haskell Platform:
+https://www.haskell.org/platform/
+
+The program has been tested on OS X 10.10 and Ubuntu 14.10 with GHC
+7.8.4 (earlier versions work as well, when manually installing the
+depedencies).
+
+=============== Building =======================
+
+There is an build script: build.sh which might be more convenient,
+doing the following steps:
+
+If cabal is installed, it should suffice to simply run the following commands in the directory of the source code:
+
+cabal update
+cabal configure
+# if dependencies are missing it might be necessary to:
+#    cabal install --only-dependencies
+cabal build
+
+The directory should include connected_mu_clique.hs, Graph.hs and
+connected_mu_clique.cabal. Cabal should be able to install the
+required dependencies.
+
+If that's not the case (i.e. following message appears: cabal: Run the
+'configure' command first.): at least text, vector, pqueue, time and
+directory are needed. See the cabal project file for further
+information (connected_mu_clique.cabal).
+
+To install text, for example, use the following commands:
+cabal update
+cabal install text
+
+The built program is located in
+dist/build/connected-mu-clique/connected-mu-clique and comes with the
+--help flag.
+
+To manually compile the program, use:
+
+ghc -O2 -fexcess-precision -funfolding-use-threshold=16 \\
+    -o connected-mu-clique connected_mu_clique.hs -threaded -rtsopts
+
+=============== Program Call =================
+
+connected_mu_clique [OPTION...] file
+
+The options are:
+    --help                     print this help
+    --pb, --simple-p-bound     enable simple P-Bound
+    --ipb, --inner-p-bound     enable Inner P-Bound
+    --tb, --turan-bound        enable Turan Bound
+    --opb, --outer-p-bound     enable Outer P-Bound
+    --ppb, --pairwise-p-bound  enable Pairwise P-Bound
+    --sort-by-degree           sort by degree
+    --sort-by-degeneracy       sort by degeneracy
+    --sort-by-nbrs-in-p        sort by neighbors in P
+    --sort-optimistic          sorts differently depending on graph properties (same as: sort-by-degree and sort-by-degeneracy combined)
+    --sort-pessimistic         inverts the ordering
+    --score                    sorts by score and nbrs in P, simple P-Bound enabled
+    --twins                    enable Twins-Rule
+    --disable-nbrhood          disable Neighborhood Tie-Breaker
+    --k[=k]                    k (solution size), if ommited: k will be continuously increased, starting with k = 2
+    --t[=t], --timeout[=t]     timeout (s), if ommited: no timeout is set
+    --mu=m                     minimum density of the solution
+
+
+===================== Execution ===================
+
+Example:
+
+./connected-mu-clique keller4 --mu=0.7 --score --t=3600
+
+With this call, the program tries to find a connected μ-Clique with μ
+>= 0.7 in the keller4 graph. The time limit is set to 1 hour. It sorts
+the nodes according to degree order and uses the simple P-Bound.
+
+
+=============== Supported Graph Format ============
+
+Graphs are in DIMACS Format (each line is an edge):
+
+       e v1 v2
+
+or simply
+
+       v1 v2
+
+which denotes an edge from v1 to v2.
+
+-- Kolja Stahl, 02/04/2015
