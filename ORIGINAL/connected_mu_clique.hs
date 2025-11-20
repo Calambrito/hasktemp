@@ -162,21 +162,24 @@ pivotSize = IS.size . p . s
 nodecount' :: TreeNode -> Int
 nodecount' = IM.size . g . gs
 
+aribK = 2000
+
 -- | The algorihtm as described in Section 1 of the paper (see README). See also extendP and extendN.
 delta :: Int -> Double -> Graph -> Maybe (IM.IntMap Double) -> Node -> Options -> Twins ->  [Node] -> MaybeT (State Int) Double
 delta !k !μ graph degordering !pivot opts tw orderedNodes = go (Just pivot) (sortByScore degordering Nothing (IS.toList $ getNbrs pivot graph) graph opts 1) (mkTreeNode pivot graph)
     where go :: Maybe Node -> [Node] -> TreeNode -> MaybeT (State Int) Double
           go (Just _) _ tn
             | let cliqueNodes = map (+1) $ IS.toList (p $ s tn)
-                , trace (if pdensity >= μ
-                        then "cal found: " ++ show cliqueNodes ++ " with density = " ++ show pdensity
-                        else "") True
-                , accumulate cliqueNodes pdensity (pdensity >= μ)
-                , k == lp && pdensity >= μ
+            --    , trace (if pdensity >= μ && lp >= k
+            --            then "cal found: " ++ show cliqueNodes ++ " with density = " ++ show pdensity
+            --            else "") True
+                , accumulate cliqueNodes pdensity (pdensity >= μ && lp >= k)
+                , lp > aribK && pdensity >= μ
                     = mzero
             | k == lp && pdensity < μ = mzero
             | nodecount' tn < klp = mzero
-            | k1Size tn + lp >= k && density' (edges + klp) k >= μ = return (density' (edges + klp) k)
+    --        | k1Size tn + lp >= k && density' (edges + klp) k >= μ = mzero
+    --        | k1Size tn + lp >= k && density' (edges + klp) k >= μ = return (density' (edges + klp) k)
     --        | not (edgeBound μ k (nodecount' tn) (edgesG $ gs tn)) = mzero
             | l > klp && notFeasible opts k lp edges μ (p $ s tn) (g $ gs tn) (nc tn) l orderedNodes = mzero
                 where !lp = pivotSize tn
@@ -526,3 +529,4 @@ main = do
 -- helper
 active' :: NodeSet -> NodeSet -> Maybe Node
 active' p n = safeHead $ IS.elems (p IS.\\ n)
+-- ./e --k=10 --mu=0.9 test.pel
